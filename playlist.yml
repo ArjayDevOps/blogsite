@@ -1,0 +1,42 @@
+---
+- name: Deploy Website on Apache Server
+  hosts: web_server
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: Git pkg installed
+    ansible.builtin.yum:
+      name: git
+      state: present
+
+  - name: Checkout git repo
+    ansible.builtin.git:
+      repo: https://github.com/ArjayDevOps/blogsite.git
+      dest: /home/temp_repo
+      force: true
+
+  - name: Download Apache
+    yum:
+      name: httpd
+      state: latest
+
+  - name: Start Apache
+    service:
+      name: httpd
+      state: started
+
+  - name: Deploy Web Application
+    ansible.builtin.copy:
+      src: /home/temp_repo/
+      dest: /var/www/html/
+      owner: apache
+      group: apache
+      remote_src: true
+      mode: '0744'
+
+  - name: Restart Apache
+    service:
+      name: httpd
+      state: restarted
+    
